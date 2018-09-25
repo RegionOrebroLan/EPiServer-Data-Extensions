@@ -1,0 +1,8 @@
+{
+	"Connections": {
+		"EPiServerDB": {
+			"ConnectionString": "Server=(LocalDB)\\MSSQLLocalDB;AttachDbFileName=|DataDirectory|EPiServer.mdf;Integrated Security=True;MultipleActiveResultSets=True",
+			"ProviderName": "System.Data.SqlClient"
+		}
+	}
+}
