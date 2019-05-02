@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
@@ -281,6 +282,7 @@ namespace RegionOrebroLan.EPiServer.Data.IntegrationTests.SchemaUpdates
 			Assert.AreEqual(string.Empty, languageBranchResult.Item3);
 		}
 
+		[SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters")]
 		protected internal virtual void ValidateConnectionSetting()
 		{
 			var connectionStringToUpper = (this.ConnectionSetting?.ConnectionString ?? string.Empty).ToUpperInvariant();

@@ -40,6 +40,7 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 			return stream;
 		}
 
+		[SuppressMessage("Design", "CA1062:Validate arguments of public methods")]
 		[SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
 		protected internal virtual void ExecuteScript(ConnectionStringOptions connectionStringOption, string content)
 		{
