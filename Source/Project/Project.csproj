@@ -2,10 +2,10 @@
 	<Import Project="Build\Build.props" />
 	<ItemGroup>
 		<PackageReference Include="EPiServer.Framework" Version="11.10.1" />
-		<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.2">
+		<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="RegionOrebroLan.Data" Version="1.1.0-alpha" />
+		<PackageReference Include="RegionOrebroLan.Data" Version="1.2.0-alpha" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Remove="CodeAnalysis\Dictionary.xml" />
