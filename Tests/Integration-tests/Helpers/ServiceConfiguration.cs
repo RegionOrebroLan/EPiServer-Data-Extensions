@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -10,11 +10,12 @@ using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using RegionOrebroLan;
 using RegionOrebroLan.Data;
 using RegionOrebroLan.Data.Common;
 using RegionOrebroLan.EPiServer.Data.SchemaUpdates;
 
-namespace RegionOrebroLan.EPiServer.Data.IntegrationTests.Helpers
+namespace IntegrationTests.Helpers
 {
 	[InitializableModule]
 	public class ServiceConfiguration : IConfigurableModule

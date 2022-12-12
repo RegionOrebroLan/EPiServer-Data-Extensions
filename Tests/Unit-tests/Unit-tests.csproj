@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<AssemblyOriginatorKeyFile>$(SolutionDir)StrongName.Development.snk</AssemblyOriginatorKeyFile>
+		<DelaySign>false</DelaySign>
+		<RootNamespace>UnitTests</RootNamespace>
+		<SignAssembly>true</SignAssembly>
+		<TargetFramework>net472</TargetFramework>
+	</PropertyGroup>
+</Project>

@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,10 +14,9 @@ using EPiServer.ServiceLocation;
 using EPiServer.ServiceLocation.AutoDiscovery;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace RegionOrebroLan.EPiServer.Data.IntegrationTests
+namespace IntegrationTests
 {
 	[TestClass]
-	[SuppressMessage("Naming", "CA1716:Identifiers should not match keywords")]
 	public static class Global
 	{
 		#region Fields
@@ -47,16 +45,14 @@ namespace RegionOrebroLan.EPiServer.Data.IntegrationTests
 		}
 
 		[AssemblyInitialize]
-		[CLSCompliant(false)]
-		[SuppressMessage("Usage", "CA1801:Review unused parameters")]
-		public static void Initialize(TestContext testContext)
+		public static void Initialize(TestContext _)
 		{
 			//AppDomain.CurrentDomain.SetData("DataDirectory", Path.Combine(ProjectDirectoryPath, "App_Data") + @"\");
 			AppDomain.CurrentDomain.SetData("DataDirectory", Path.Combine(ProjectDirectoryPath, "App_Data"));
 
 			var assemblies = GetAssemblies().ToArray();
 
-			var initializationEngine = new InitializationEngine((IServiceLocatorFactory) null, HostType.TestFramework, assemblies);
+			var initializationEngine = new InitializationEngine((IServiceLocatorFactory)null, HostType.TestFramework, assemblies);
 
 			initializationEngine.Configure();
 		}

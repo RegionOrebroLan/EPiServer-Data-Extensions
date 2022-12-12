@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
@@ -10,11 +10,12 @@ using EPiServer.Data;
 using EPiServer.Data.SchemaUpdates;
 using EPiServer.ServiceLocation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RegionOrebroLan;
 using RegionOrebroLan.Data;
 using RegionOrebroLan.Data.Common;
 using RegionOrebroLan.Data.Extensions;
 
-namespace RegionOrebroLan.EPiServer.Data.IntegrationTests.SchemaUpdates
+namespace IntegrationTests.SchemaUpdates
 {
 	[TestClass]
 	public class SchemaUpdaterTest
@@ -34,7 +35,7 @@ namespace RegionOrebroLan.EPiServer.Data.IntegrationTests.SchemaUpdates
 
 		#region Properties
 
-		protected internal virtual string ApplicationDataDirectoryPath => this._applicationDataDirectoryPath ?? (this._applicationDataDirectoryPath = (string) this.ApplicationDomain.GetData("DataDirectory"));
+		protected internal virtual string ApplicationDataDirectoryPath => this._applicationDataDirectoryPath ?? (this._applicationDataDirectoryPath = (string)this.ApplicationDomain.GetData("DataDirectory"));
 		protected internal virtual IApplicationDomain ApplicationDomain { get; } = ServiceLocator.Current.GetInstance<IApplicationDomain>();
 
 		protected internal virtual ConnectionStringOptions ConnectionSetting
@@ -176,13 +177,13 @@ namespace RegionOrebroLan.EPiServer.Data.IntegrationTests.SchemaUpdates
 					{
 						while(reader.Read())
 						{
-							var id = (int) reader["pkID"];
+							var id = (int)reader["pkID"];
 
 							if(id == 1)
-								firstLanguageId = ((string) reader["LanguageID"] ?? string.Empty).Trim();
+								firstLanguageId = ((string)reader["LanguageID"] ?? string.Empty).Trim();
 
 							if(id == emptyLanguageIdRowNumber)
-								emptyLanguageId = ((string) reader["LanguageID"] ?? string.Empty).Trim();
+								emptyLanguageId = ((string)reader["LanguageID"] ?? string.Empty).Trim();
 
 							numberOfRows++;
 						}

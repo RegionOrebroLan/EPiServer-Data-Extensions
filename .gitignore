@@ -398,9 +398,7 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Custom
-Source/.Global/Signing/*
-Source/Integration-tests/App_Data/*
+StrongName.snk
 
-!Source/.Global/Signing/ReadMe.md
-!Source/.Global/Signing/StrongName.Development.snk
-!Source/Integration-tests/App_Data/EPiServer.Data.Resources.SqlCreateScripts.zip-Replacements.Copy.zip
+Tests/Integration-tests/App_Data/*
+!Tests/Integration-tests/App_Data/EPiServer.Data.Resources.SqlCreateScripts.zip-Replacements.Copy.zip
