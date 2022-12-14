@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using EPiServer.Data;
-using RegionOrebroLan.Data.Common;
+using RegionOrebroLan.EPiServer.Data.Common;
 
 namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 {
@@ -13,22 +12,21 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 	{
 		#region Constructors
 
-		protected SchemaUpdaterBase(IProviderFactories providerFactories)
+		protected SchemaUpdaterBase(IDbProviderFactories dbProviderFactories)
 		{
-			this.ProviderFactories = providerFactories ?? throw new ArgumentNullException(nameof(providerFactories));
+			this.DbProviderFactories = dbProviderFactories ?? throw new ArgumentNullException(nameof(dbProviderFactories));
 		}
 
 		#endregion
 
 		#region Properties
 
-		protected internal virtual IProviderFactories ProviderFactories { get; }
+		protected internal virtual IDbProviderFactories DbProviderFactories { get; }
 
 		#endregion
 
 		#region Methods
 
-		[SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Should be disposed by the caller.")]
 		protected internal virtual Stream CreateStream(string value)
 		{
 			var stream = new MemoryStream();
@@ -40,14 +38,12 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 			return stream;
 		}
 
-		[SuppressMessage("Design", "CA1062:Validate arguments of public methods")]
-		[SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
 		protected internal virtual void ExecuteScript(ConnectionStringOptions connectionStringOption, string content)
 		{
 			if(connectionStringOption == null)
 				throw new ArgumentNullException(nameof(connectionStringOption));
 
-			var databaseProviderFactory = this.ProviderFactories.Get(connectionStringOption.ProviderName);
+			var databaseProviderFactory = this.DbProviderFactories.Get(connectionStringOption.ProviderName);
 
 			using(var connection = databaseProviderFactory.CreateConnection())
 			{

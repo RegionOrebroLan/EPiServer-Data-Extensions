@@ -21,36 +21,45 @@ namespace IntegrationTests
 	{
 		#region Fields
 
+		private static readonly Assembly[] _defaultAssemblies =
+		{
+			typeof(SiteSecret).Assembly, // EPiServer.ApplicationModules
+			typeof(DataAccessOptions).Assembly, // EPiServer.Data
+			typeof(DefaultCacheProvider).Assembly, // EPiServer.Data.Cache
+			typeof(EventMessage).Assembly, // EPiServer.Events
+			typeof(ContextCache).Assembly, // EPiServer.Framework
+			typeof(LicenseBuilder).Assembly, // EPiServer.Licensing
+			typeof(StructureMapServiceLocatorFactory).Assembly, // EPiServer.ServiceLocation.StructureMap
+			typeof(Global).Assembly // This assembly
+		};
+
 		// ReSharper disable PossibleNullReferenceException
 		public static readonly string ProjectDirectoryPath = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.Parent.FullName;
 		// ReSharper restore PossibleNullReferenceException
 
 		#endregion
 
+		#region Properties
+
+		public static IEnumerable<Assembly> DefaultAssemblies => _defaultAssemblies;
+
+		#endregion
+
 		#region Methods
 
-		private static IEnumerable<Assembly> GetAssemblies()
+		public static IList<Assembly> GetAssemblies()
 		{
-			return new[]
-			{
-				typeof(SiteSecret).Assembly, // EPiServer.ApplicationModules
-				typeof(DataAccessOptions).Assembly, // EPiServer.Data
-				typeof(DefaultCacheProvider).Assembly, // EPiServer.Data.Cache
-				typeof(EventMessage).Assembly, // EPiServer.Events
-				typeof(ContextCache).Assembly, // EPiServer.Framework
-				typeof(LicenseBuilder).Assembly, // EPiServer.Licensing
-				typeof(StructureMapServiceLocatorFactory).Assembly, // EPiServer.ServiceLocation.StructureMap
-				typeof(Global).Assembly // This assembly
-			};
+			return new List<Assembly>(DefaultAssemblies);
 		}
 
-		[AssemblyInitialize]
-		public static void Initialize(TestContext _)
+		public static void Initialize()
 		{
-			//AppDomain.CurrentDomain.SetData("DataDirectory", Path.Combine(ProjectDirectoryPath, "App_Data") + @"\");
-			AppDomain.CurrentDomain.SetData("DataDirectory", Path.Combine(ProjectDirectoryPath, "App_Data"));
+			Initialize(DefaultAssemblies);
+		}
 
-			var assemblies = GetAssemblies().ToArray();
+		public static void Initialize(IEnumerable<Assembly> assemblies)
+		{
+			assemblies = (assemblies ?? Enumerable.Empty<Assembly>()).ToArray();
 
 			var initializationEngine = new InitializationEngine((IServiceLocatorFactory)null, HostType.TestFramework, assemblies);
 

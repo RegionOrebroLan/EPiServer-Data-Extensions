@@ -1,19 +1,18 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO.Abstractions;
+using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using EPiServer.Data;
 using EPiServer.Data.SchemaUpdates;
+using EPiServer.Framework;
 using EPiServer.ServiceLocation;
+using IntegrationTests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RegionOrebroLan;
-using RegionOrebroLan.Data;
-using RegionOrebroLan.Data.Common;
-using RegionOrebroLan.Data.Extensions;
+using RegionOrebroLan.EPiServer.Data.Common;
 
 namespace IntegrationTests.SchemaUpdates
 {
@@ -24,9 +23,6 @@ namespace IntegrationTests.SchemaUpdates
 
 		private string _applicationDataDirectoryPath;
 		private ConnectionStringOptions _connectionSetting;
-		private string _databaseFilePath;
-		private string _databaseLogFilePath;
-		private IDatabaseManager _databaseManager;
 		private string _replacementFileCopyPath;
 		private string _replacementFilePath;
 		private const string _replacementFilePathFormat = "EPiServer.Data.Resources.SqlCreateScripts.zip-Replacements{0}.zip";
@@ -35,8 +31,7 @@ namespace IntegrationTests.SchemaUpdates
 
 		#region Properties
 
-		protected internal virtual string ApplicationDataDirectoryPath => this._applicationDataDirectoryPath ?? (this._applicationDataDirectoryPath = (string)this.ApplicationDomain.GetData("DataDirectory"));
-		protected internal virtual IApplicationDomain ApplicationDomain { get; } = ServiceLocator.Current.GetInstance<IApplicationDomain>();
+		protected internal virtual string ApplicationDataDirectoryPath => this._applicationDataDirectoryPath ?? (this._applicationDataDirectoryPath = Path.Combine(Global.ProjectDirectoryPath, ServiceLocator.Current.GetInstance<EnvironmentOptions>().BasePath));
 
 		protected internal virtual ConnectionStringOptions ConnectionSetting
 		{
@@ -55,98 +50,50 @@ namespace IntegrationTests.SchemaUpdates
 			}
 		}
 
-		protected internal virtual IConnectionStringBuilderFactory ConnectionStringBuilderFactory { get; } = ServiceLocator.Current.GetInstance<IConnectionStringBuilderFactory>();
 		protected internal virtual DataAccessOptions DataAccessOptions { get; } = ServiceLocator.Current.GetInstance<DataAccessOptions>();
-
-		protected internal virtual string DatabaseFilePath
-		{
-			get
-			{
-				// ReSharper disable InvertIf
-				if(this._databaseFilePath == null)
-				{
-					var connectionStringBuilder = this.ConnectionStringBuilderFactory.Create(this.ConnectionSetting.ConnectionString, this.ConnectionSetting.ProviderName);
-
-					this._databaseFilePath = connectionStringBuilder.GetActualDatabaseFilePath(this.ApplicationDomain);
-				}
-				// ReSharper restore InvertIf
-
-				return this._databaseFilePath;
-			}
-		}
-
-		protected internal virtual string DatabaseLogFilePath
-		{
-			get
-			{
-				// ReSharper disable InvertIf
-				if(this._databaseLogFilePath == null)
-				{
-					var directoryPath = this.FileSystem.Path.GetDirectoryName(this.DatabaseFilePath);
-					var fileName = this.FileSystem.Path.GetFileNameWithoutExtension(this.DatabaseFilePath);
-
-					this._databaseLogFilePath = this.FileSystem.Path.Combine(directoryPath, fileName) + "_log.ldf";
-				}
-				// ReSharper restore InvertIf
-
-				return this._databaseLogFilePath;
-			}
-		}
-
-		protected internal virtual IDatabaseManager DatabaseManager
-		{
-			get
-			{
-				// ReSharper disable InvertIf
-				if(this._databaseManager == null)
-				{
-					var databaseManagerFactory = ServiceLocator.Current.GetInstance<IDatabaseManagerFactory>();
-
-					this._databaseManager = databaseManagerFactory.Create(this.ConnectionSetting.ProviderName);
-				}
-				// ReSharper restore InvertIf
-
-				return this._databaseManager;
-			}
-		}
-
-		protected internal virtual IFileSystem FileSystem { get; } = ServiceLocator.Current.GetInstance<IFileSystem>();
-		protected internal virtual string ReplacementFileCopyPath => this._replacementFileCopyPath ?? (this._replacementFileCopyPath = this.FileSystem.Path.Combine(this.ApplicationDataDirectoryPath, string.Format(CultureInfo.InvariantCulture, this.ReplacementFilePathFormat, ".Copy")));
-		protected internal virtual string ReplacementFilePath => this._replacementFilePath ?? (this._replacementFilePath = this.FileSystem.Path.Combine(this.ApplicationDataDirectoryPath, string.Format(CultureInfo.InvariantCulture, this.ReplacementFilePathFormat, string.Empty)));
+		protected internal virtual string ReplacementFileCopyPath => this._replacementFileCopyPath ?? (this._replacementFileCopyPath = Path.Combine(this.ApplicationDataDirectoryPath, string.Format(CultureInfo.InvariantCulture, this.ReplacementFilePathFormat, ".Copy")));
+		protected internal virtual string ReplacementFilePath => this._replacementFilePath ?? (this._replacementFilePath = Path.Combine(this.ApplicationDataDirectoryPath, string.Format(CultureInfo.InvariantCulture, this.ReplacementFilePathFormat, string.Empty)));
 		protected internal virtual string ReplacementFilePathFormat => _replacementFilePathFormat;
 
 		#endregion
 
 		#region Methods
 
-		protected internal virtual void Cleanup()
+		[ClassCleanup]
+		public static async Task ClassCeanup()
 		{
-			if(this.FileSystem.File.Exists(this.ReplacementFilePath))
-			{
-				this.FileSystem.File.Delete(this.ReplacementFilePath);
+			await Task.CompletedTask;
 
-				Thread.Sleep(3000);
-			}
-
-			if(!this.DatabaseManager.DatabaseExists(this.ConnectionSetting.ConnectionString))
-				return;
-
-			this.DatabaseManager.DropDatabase(this.ConnectionSetting.ConnectionString);
-
-			Thread.Sleep(3000);
+			AppDomainHelper.SetDataDirectory(null);
 		}
 
-		[TestCleanup]
-		public void CleanupEachTest()
+		[ClassInitialize]
+		public static async Task ClassInitialize(TestContext _)
 		{
-			this.Cleanup();
+			await Task.CompletedTask;
+
+			Global.Initialize();
 		}
 
-		protected internal virtual void CreateDatabase()
+		protected internal virtual async Task CleanupAsync()
 		{
-			this.DatabaseManager.CreateDatabase(this.ConnectionSetting.ConnectionString);
+			AppDomainHelper.SetDataDirectory(this.ApplicationDataDirectoryPath);
 
-			Thread.Sleep(5000);
+			await DatabaseHelper.DeleteDatabaseAsync(this.ConnectionSetting.ConnectionString);
+
+			if(File.Exists(this.ReplacementFilePath))
+				File.Delete(this.ReplacementFilePath);
+
+			AppDomainHelper.SetDataDirectory(null);
+
+			Thread.Sleep(2000);
+		}
+
+		protected internal virtual async Task CreateDatabaseAsync()
+		{
+			await DatabaseHelper.CreateDatabaseAsync(this.ConnectionSetting.ConnectionString);
+
+			Thread.Sleep(2000);
 		}
 
 		protected internal virtual Tuple<int, string, string> GetLanguageBranchResult(int emptyLanguageIdRowNumber)
@@ -155,7 +102,7 @@ namespace IntegrationTests.SchemaUpdates
 			string firstLanguageId = null;
 			var numberOfRows = 0;
 
-			var providerFactories = ServiceLocator.Current.GetInstance<IProviderFactories>();
+			var providerFactories = ServiceLocator.Current.GetInstance<IDbProviderFactories>();
 
 			var providerFactory = providerFactories.Get(this.ConnectionSetting.ProviderName);
 
@@ -207,9 +154,9 @@ namespace IntegrationTests.SchemaUpdates
 		}
 
 		[TestMethod]
-		public void GetStatus_IfTheDatabaseIsALocallyAttachedDatabaseButIsEmpty_ShouldReturnASchemaStatusWithAnUndefinedDatabaseVersion()
+		public async Task GetStatus_IfTheDatabaseIsALocallyAttachedDatabaseButIsEmpty_ShouldReturnASchemaStatusWithAnUndefinedDatabaseVersion()
 		{
-			this.CreateDatabase();
+			await this.CreateDatabaseAsync();
 
 			var schemaUpdater = ServiceLocator.Current.GetInstance<ISchemaUpdater>();
 
@@ -220,9 +167,9 @@ namespace IntegrationTests.SchemaUpdates
 		}
 
 		[TestMethod]
-		public void GetStatus_RegardlessOfWhetherTheConnectionStringOptionsParameterIsNullOrNot_ShouldReturnTheSameResult()
+		public async Task GetStatus_RegardlessOfWhetherTheConnectionStringOptionsParameterIsNullOrNot_ShouldReturnTheSameResult()
 		{
-			this.CreateDatabase();
+			await this.CreateDatabaseAsync();
 
 			var schemaUpdater = ServiceLocator.Current.GetInstance<ISchemaUpdater>();
 
@@ -239,18 +186,26 @@ namespace IntegrationTests.SchemaUpdates
 			Assert.AreEqual(firstSchemaStatus.DatabaseVersion, secondSchemaStatus.DatabaseVersion);
 		}
 
-		[TestInitialize]
-		public void InitializeEachTest()
+		[TestCleanup]
+		public async Task TestCleanup()
 		{
-			this.Cleanup();
+			await this.CleanupAsync();
+		}
+
+		[TestInitialize]
+		public async Task TestInitialize()
+		{
+			await this.CleanupAsync();
+
+			AppDomainHelper.SetDataDirectory(this.ApplicationDataDirectoryPath);
 
 			this.ValidateConnectionSetting();
 		}
 
 		[TestMethod]
-		public void Update_WithoutReplacements_ShouldWorkProperly()
+		public async Task Update_WithoutReplacements_ShouldWorkProperly()
 		{
-			this.CreateDatabase();
+			await this.CreateDatabaseAsync();
 
 			var schemaUpdater = ServiceLocator.Current.GetInstance<ISchemaUpdater>();
 
@@ -264,13 +219,13 @@ namespace IntegrationTests.SchemaUpdates
 		}
 
 		[TestMethod]
-		public void Update_WithReplacements_ShouldWorkProperly()
+		public async Task Update_WithReplacements_ShouldWorkProperly()
 		{
-			this.FileSystem.File.Copy(this.ReplacementFileCopyPath, this.ReplacementFilePath, true);
+			File.Copy(this.ReplacementFileCopyPath, this.ReplacementFilePath, true);
 
 			Thread.Sleep(3000);
 
-			this.CreateDatabase();
+			await this.CreateDatabaseAsync();
 
 			var schemaUpdater = ServiceLocator.Current.GetInstance<ISchemaUpdater>();
 
@@ -283,7 +238,6 @@ namespace IntegrationTests.SchemaUpdates
 			Assert.AreEqual(string.Empty, languageBranchResult.Item3);
 		}
 
-		[SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters")]
 		protected internal virtual void ValidateConnectionSetting()
 		{
 			var connectionStringToUpper = (this.ConnectionSetting?.ConnectionString ?? string.Empty).ToUpperInvariant();

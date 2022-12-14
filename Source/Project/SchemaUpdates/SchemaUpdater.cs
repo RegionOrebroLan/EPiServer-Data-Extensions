@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.IO.Abstractions;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
@@ -12,9 +10,9 @@ using EPiServer.Data;
 using EPiServer.Data.Providers.Internal;
 using EPiServer.Data.SchemaUpdates;
 using EPiServer.Data.SchemaUpdates.Internal;
-using RegionOrebroLan.Data;
-using RegionOrebroLan.Data.Common;
-using RegionOrebroLan.Extensions;
+using EPiServer.Framework;
+using RegionOrebroLan.EPiServer.Data.Common;
+using RegionOrebroLan.EPiServer.Data.Hosting;
 
 namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 {
@@ -24,6 +22,7 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 
 		private const string _createDatabaseResourceName = "EPiServer.Data.Resources.SqlCreateScripts.zip";
 		private object _databaseVersionRetriever;
+		private static FieldInfo _databaseVersionRetrieverField;
 		private DatabaseVersionValidator _databaseVersionValidator;
 		private Func<bool, Version> _getDatabaseVersionFunction;
 
@@ -31,13 +30,12 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 
 		#region Constructors
 
-		public SchemaUpdater(IApplicationDomain applicationDomain, IConnectionStringBuilderFactory connectionStringBuilderFactory, IDatabaseConnectionResolver databaseConnectionResolver, IDatabaseExecutor databaseExecutor, IFileSystem fileSystem, IProviderFactories providerFactories, ScriptExecutor scriptExecutor) : base(providerFactories)
+		public SchemaUpdater(IDatabaseConnectionResolver databaseConnectionResolver, IDatabaseExecutor databaseExecutor, IDbProviderFactories dbProviderFactories, EnvironmentOptions environment, IHostEnvironment hostEnvironment, ScriptExecutor scriptExecutor) : base(dbProviderFactories)
 		{
-			this.ApplicationDomain = applicationDomain ?? throw new ArgumentNullException(nameof(applicationDomain));
-			this.ConnectionStringBuilderFactory = connectionStringBuilderFactory ?? throw new ArgumentNullException(nameof(connectionStringBuilderFactory));
 			this.DatabaseConnectionResolver = databaseConnectionResolver ?? throw new ArgumentNullException(nameof(databaseConnectionResolver));
 			this.DatabaseExecutor = databaseExecutor ?? throw new ArgumentNullException(nameof(databaseExecutor));
-			this.FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+			this.Environment = environment ?? throw new ArgumentNullException(nameof(environment));
+			this.HostEnvironment = hostEnvironment ?? throw new ArgumentNullException(nameof(hostEnvironment));
 			this.ScriptExecutor = scriptExecutor ?? throw new ArgumentNullException(nameof(scriptExecutor));
 		}
 
@@ -45,8 +43,6 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 
 		#region Properties
 
-		protected internal virtual IApplicationDomain ApplicationDomain { get; }
-		protected internal virtual IConnectionStringBuilderFactory ConnectionStringBuilderFactory { get; }
 		protected internal virtual string CreateDatabaseResourceName => _createDatabaseResourceName;
 		protected internal virtual IDatabaseConnectionResolver DatabaseConnectionResolver { get; }
 		protected internal virtual IDatabaseExecutor DatabaseExecutor { get; }
@@ -55,16 +51,25 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 		{
 			get
 			{
-				// ReSharper disable All
-				this._databaseVersionRetriever ??= typeof(DatabaseVersionValidator).GetField("_databaseVersionRetriever", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this.DatabaseVersionValidator);
-				// ReSharper restore All
+				this._databaseVersionRetriever ??= this.DatabaseVersionRetrieverField.GetValue(this.DatabaseVersionValidator);
 
 				return this._databaseVersionRetriever;
 			}
 		}
 
+		protected internal virtual FieldInfo DatabaseVersionRetrieverField
+		{
+			get
+			{
+				if(_databaseVersionRetrieverField == null)
+					_databaseVersionRetrieverField = typeof(DatabaseVersionValidator).GetField("_databaseVersionRetriever", BindingFlags.Instance | BindingFlags.NonPublic);
+
+				return _databaseVersionRetrieverField;
+			}
+		}
+
 		protected internal virtual DatabaseVersionValidator DatabaseVersionValidator => this._databaseVersionValidator ??= new DatabaseVersionValidator(this.DatabaseExecutor, this.DatabaseConnectionResolver, this.ScriptExecutor);
-		protected internal virtual IFileSystem FileSystem { get; }
+		protected internal virtual EnvironmentOptions Environment { get; }
 
 		protected internal virtual Func<bool, Version> GetDatabaseVersionFunction
 		{
@@ -83,6 +88,7 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 			}
 		}
 
+		protected internal virtual IHostEnvironment HostEnvironment { get; }
 		protected internal virtual ScriptExecutor ScriptExecutor { get; }
 
 		#endregion
@@ -94,7 +100,6 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 			return new Dictionary<string, T>(StringComparer.OrdinalIgnoreCase);
 		}
 
-		[SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
 		protected internal virtual IDictionary<string, string> GetArchiveEntries(Stream stream)
 		{
 			var archiveEntries = this.CreateStringKeyDictionary<string>();
@@ -123,15 +128,28 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 			return this.GetDatabaseVersionFunction(forceRefresh);
 		}
 
+		protected internal virtual string GetDataDirectoryPath()
+		{
+			/*
+				When we are at EPiServer 12 we can do:
+
+				return Path.GetFullPath(this.Environment.AppDataPath, this.HostEnvironment.ContentRootPath);
+			*/
+
+			var applicationDataPath = this.Environment.BasePath;
+
+			return Path.IsPathRooted(applicationDataPath) ? applicationDataPath : Path.Combine(this.HostEnvironment.ContentRootPath, applicationDataPath);
+		}
+
 		protected internal virtual IDictionary<string, string> GetReplacementEntries(string resourceName)
 		{
-			var replacementsArchivePath = this.FileSystem.Path.Combine(this.ApplicationDomain.GetDataDirectoryPath(), resourceName + "-Replacements.zip");
-			var replacementsArchiveExists = this.FileSystem.File.Exists(replacementsArchivePath);
+			var replacementsArchivePath = Path.Combine(this.GetDataDirectoryPath(), resourceName + "-Replacements.zip");
+			var replacementsArchiveExists = File.Exists(replacementsArchivePath);
 
 			// ReSharper disable InvertIf
 			if(replacementsArchiveExists)
 			{
-				using(var stream = this.FileSystem.File.OpenRead(replacementsArchivePath))
+				using(var stream = File.OpenRead(replacementsArchivePath))
 				{
 					return this.GetArchiveEntries(stream);
 				}
@@ -141,7 +159,6 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 			return this.CreateStringKeyDictionary<string>();
 		}
 
-		[SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
 		protected internal virtual IDictionary<string, IEnumerable<Tuple<string, string, bool>>> GetReplacements(string resourceName)
 		{
 			var temporaryReplacements = this.CreateStringKeyDictionary<IList<Tuple<string, string, bool>>>();
@@ -149,7 +166,7 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 
 			foreach(var key in replacementEntries.Keys)
 			{
-				var extension = this.FileSystem.Path.GetExtension(key);
+				var extension = Path.GetExtension(key);
 				var keyWithoutExtension = key.Substring(0, key.Length - extension.Length);
 				var replacementKey = keyWithoutExtension + ".Replacement" + extension;
 

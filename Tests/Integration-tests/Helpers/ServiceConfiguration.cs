@@ -1,19 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using EPiServer.Data;
-using EPiServer.Data.SchemaUpdates;
 using EPiServer.Framework;
 using EPiServer.Framework.Initialization;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using Microsoft.Extensions.Configuration;
 using Moq;
-using RegionOrebroLan;
-using RegionOrebroLan.Data;
-using RegionOrebroLan.Data.Common;
-using RegionOrebroLan.EPiServer.Data.SchemaUpdates;
+using RegionOrebroLan.EPiServer.Data.DependencyInjection.Extensions;
+using RegionOrebroLan.EPiServer.Data.Hosting;
 
 namespace IntegrationTests.Helpers
 {
@@ -54,15 +50,10 @@ namespace IntegrationTests.Helpers
 			if(context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			context.Services.AddSingleton(AppDomain.CurrentDomain);
-			context.Services.AddSingleton<IApplicationDomain, AppDomainWrapper>();
-			context.Services.AddSingleton<IConnectionStringBuilderFactory, ConnectionStringBuilderFactory>();
-			context.Services.AddSingleton<IDatabaseManagerFactory, DatabaseManagerFactory>();
-			context.Services.AddSingleton<IFileSystem, FileSystem>();
-			context.Services.AddSingleton<IProviderFactories, DbProviderFactoriesWrapper>();
+			context.Services.AddData();
 
-			context.Services.RemoveAll<ISchemaUpdater>();
-			context.Services.AddTransient<ISchemaUpdater, SchemaUpdater>();
+			context.Services.RemoveAll<IHostEnvironment>();
+			context.Services.AddSingleton<IHostEnvironment>(new HostEnvironment { ContentRootPath = Global.ProjectDirectoryPath });
 
 			context.Services.AddSingleton(Mock.Of<IVirtualRoleReplication>());
 
