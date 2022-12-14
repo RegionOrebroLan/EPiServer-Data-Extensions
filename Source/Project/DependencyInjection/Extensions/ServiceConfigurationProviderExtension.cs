@@ -17,6 +17,7 @@ namespace RegionOrebroLan.EPiServer.Data.DependencyInjection.Extensions
 			if(services == null)
 				throw new ArgumentNullException(nameof(services));
 
+			services.TryAdd<IConnectionStringResolver, ConnectionStringResolver>(ServiceInstanceScope.Singleton);
 			services.TryAdd<IDbProviderFactories, DbProviderFactoriesWrapper>(ServiceInstanceScope.Singleton);
 			services.TryAdd<IHostEnvironment, HostEnvironment>(ServiceInstanceScope.Singleton);
 			services.TryAdd(_ => LogManager.LoggerFactory() ?? new TraceLoggerFactory(), ServiceInstanceScope.Singleton);
