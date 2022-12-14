@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
@@ -9,11 +9,11 @@ using RegionOrebroLan.Data.Common;
 
 namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 {
-	public abstract class BasicSchemaUpdater
+	public abstract class SchemaUpdaterBase
 	{
 		#region Constructors
 
-		protected BasicSchemaUpdater(IProviderFactories providerFactories)
+		protected SchemaUpdaterBase(IProviderFactories providerFactories)
 		{
 			this.ProviderFactories = providerFactories ?? throw new ArgumentNullException(nameof(providerFactories));
 		}
@@ -58,7 +58,7 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 
 				var lines = new List<string>();
 
-				foreach(var line in (content ?? string.Empty).Split(new[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries))
+				foreach(var line in (content ?? string.Empty).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
 				{
 					if(line.Equals("GO", StringComparison.Ordinal))
 					{

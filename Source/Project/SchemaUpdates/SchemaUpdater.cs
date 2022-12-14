@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -18,7 +18,7 @@ using RegionOrebroLan.Extensions;
 
 namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 {
-	public class SchemaUpdater : BasicSchemaUpdater, ISchemaUpdater
+	public class SchemaUpdater : SchemaUpdaterBase, ISchemaUpdater
 	{
 		#region Fields
 
