@@ -7,6 +7,7 @@
 		<DelaySign>false</DelaySign>
 		<Description>EPiServer-data additions and extensions.</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<LangVersion>latest</LangVersion>
 		<PackageProjectUrl>https://github.com/RegionOrebroLan/EPiServer-Data-Extensions/</PackageProjectUrl>
 		<PackageReleaseNotes>https://github.com/RegionOrebroLan/EPiServer-Data-Extensions/releases/</PackageReleaseNotes>
 		<PackageTags></PackageTags>

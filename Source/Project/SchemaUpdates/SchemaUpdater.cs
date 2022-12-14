@@ -56,15 +56,14 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 			get
 			{
 				// ReSharper disable All
-				if(this._databaseVersionRetriever == null)
-					this._databaseVersionRetriever = typeof(DatabaseVersionValidator).GetField("_databaseVersionRetriever", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this.DatabaseVersionValidator);
+				this._databaseVersionRetriever ??= typeof(DatabaseVersionValidator).GetField("_databaseVersionRetriever", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this.DatabaseVersionValidator);
 				// ReSharper restore All
 
 				return this._databaseVersionRetriever;
 			}
 		}
 
-		protected internal virtual DatabaseVersionValidator DatabaseVersionValidator => this._databaseVersionValidator ?? (this._databaseVersionValidator = new DatabaseVersionValidator(this.DatabaseExecutor, this.DatabaseConnectionResolver, this.ScriptExecutor));
+		protected internal virtual DatabaseVersionValidator DatabaseVersionValidator => this._databaseVersionValidator ??= new DatabaseVersionValidator(this.DatabaseExecutor, this.DatabaseConnectionResolver, this.ScriptExecutor);
 		protected internal virtual IFileSystem FileSystem { get; }
 
 		protected internal virtual Func<bool, Version> GetDatabaseVersionFunction
@@ -76,7 +75,7 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 				{
 					var databaseVersionRetrieverType = Type.GetType(typeof(DatabaseVersionValidator).AssemblyQualifiedName.Replace("DatabaseVersionValidator", "DatabaseVersionRetriever"), true);
 					var getDatabaseVersionMethod = databaseVersionRetrieverType.GetMethod("GetDatabaseVersion");
-					this._getDatabaseVersionFunction = (Func<bool, Version>) Delegate.CreateDelegate(typeof(Func<bool, Version>), this.DatabaseVersionRetriever, getDatabaseVersionMethod);
+					this._getDatabaseVersionFunction = (Func<bool, Version>)Delegate.CreateDelegate(typeof(Func<bool, Version>), this.DatabaseVersionRetriever, getDatabaseVersionMethod);
 				}
 				// ReSharper restore All
 
