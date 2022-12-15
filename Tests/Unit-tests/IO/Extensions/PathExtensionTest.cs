@@ -18,7 +18,7 @@ namespace UnitTests.IO.Extensions
 
 			Assert.AreEqual(@"C:\Directory\Sub-directory", PathExtension.GetFullPath("Sub-directory", basePath));
 			Assert.AreEqual(@"C:\Directory\Sub-directory\", PathExtension.GetFullPath(@"Sub-directory\", basePath));
-			Assert.AreEqual(@"C:\Directory\Sub-directory/", PathExtension.GetFullPath(@"Sub-directory/", basePath));
+			Assert.AreEqual(@"C:\Directory\Sub-directory\", PathExtension.GetFullPath(@"Sub-directory/", basePath));
 			Assert.AreEqual(@"\Sub-directory", PathExtension.GetFullPath(@"\Sub-directory", basePath));
 			Assert.AreEqual("/Sub-directory", PathExtension.GetFullPath("/Sub-directory", basePath));
 
@@ -26,7 +26,7 @@ namespace UnitTests.IO.Extensions
 
 			Assert.AreEqual(@"C:\Directory\Sub-directory", PathExtension.GetFullPath("Sub-directory", basePath));
 			Assert.AreEqual(@"C:\Directory\Sub-directory\", PathExtension.GetFullPath(@"Sub-directory\", basePath));
-			Assert.AreEqual(@"C:\Directory\Sub-directory/", PathExtension.GetFullPath(@"Sub-directory/", basePath));
+			Assert.AreEqual(@"C:\Directory\Sub-directory\", PathExtension.GetFullPath(@"Sub-directory/", basePath));
 			Assert.AreEqual(@"\Sub-directory", PathExtension.GetFullPath(@"\Sub-directory", basePath));
 			Assert.AreEqual("/Sub-directory", PathExtension.GetFullPath("/Sub-directory", basePath));
 
@@ -34,7 +34,15 @@ namespace UnitTests.IO.Extensions
 
 			Assert.AreEqual(@"C:\Directory\Sub-directory", PathExtension.GetFullPath("Sub-directory", basePath));
 			Assert.AreEqual(@"C:\Directory\Sub-directory\", PathExtension.GetFullPath(@"Sub-directory\", basePath));
-			Assert.AreEqual(@"C:\Directory\Sub-directory/", PathExtension.GetFullPath(@"Sub-directory/", basePath));
+			Assert.AreEqual(@"C:\Directory\Sub-directory\", PathExtension.GetFullPath(@"Sub-directory/", basePath));
+			Assert.AreEqual(@"\Sub-directory", PathExtension.GetFullPath(@"\Sub-directory", basePath));
+			Assert.AreEqual("/Sub-directory", PathExtension.GetFullPath("/Sub-directory", basePath));
+
+			basePath = @"\Root/";
+
+			Assert.AreEqual(@"C:\Root\Sub-directory", PathExtension.GetFullPath("Sub-directory", basePath));
+			Assert.AreEqual(@"C:\Root\Sub-directory\", PathExtension.GetFullPath(@"Sub-directory\", basePath));
+			Assert.AreEqual(@"C:\Root\Sub-directory\", PathExtension.GetFullPath(@"Sub-directory/", basePath));
 			Assert.AreEqual(@"\Sub-directory", PathExtension.GetFullPath(@"\Sub-directory", basePath));
 			Assert.AreEqual("/Sub-directory", PathExtension.GetFullPath("/Sub-directory", basePath));
 		}

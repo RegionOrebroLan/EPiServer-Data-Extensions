@@ -24,7 +24,12 @@ namespace RegionOrebroLan.EPiServer.Data.IO.Extensions
 			if(Path.IsPathRooted(path))
 				return path;
 
-			return Path.Combine(basePath.TrimEnd(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar), path.TrimStart(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
+			var fullPath = Path.Combine(basePath, path);
+
+			// To convert forward slashes, "/", to backslashes, "\", on Windows.
+			fullPath = Path.GetFullPath(fullPath);
+
+			return fullPath;
 		}
 
 		#endregion
