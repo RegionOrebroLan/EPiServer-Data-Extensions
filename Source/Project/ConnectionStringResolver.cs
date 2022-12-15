@@ -10,12 +10,6 @@ namespace RegionOrebroLan.EPiServer.Data
 {
 	public class ConnectionStringResolver : IConnectionStringResolver
 	{
-		#region Fields
-
-		public const string SqlServerProviderName = "System.Data.SqlClient";
-
-		#endregion
-
 		#region Constructors
 
 		public ConnectionStringResolver(IHostEnvironment hostEnvironment, ILoggerFactory loggerFactory)
@@ -40,7 +34,7 @@ namespace RegionOrebroLan.EPiServer.Data
 			if(options == null)
 				throw new ArgumentNullException(nameof(options));
 
-			if(!string.Equals(options.ProviderName, SqlServerProviderName, StringComparison.OrdinalIgnoreCase))
+			if(!string.Equals(options.ProviderName, ProviderNames.SqlServer, StringComparison.OrdinalIgnoreCase))
 			{
 				this.Logger.Information($"ProviderName = {options.ProviderName.ToStringRepresentation()}. Skipping resolve.");
 

@@ -17,7 +17,7 @@ namespace RegionOrebroLan.EPiServer.Data.Common
 				return DbProviderFactories.GetFactory(name);
 			*/
 
-			if(name != null && name.Equals("System.Data.SqlClient", StringComparison.OrdinalIgnoreCase))
+			if(name != null && name.Equals(ProviderNames.SqlServer, StringComparison.OrdinalIgnoreCase))
 				return SqlClientFactory.Instance;
 
 			throw new NotSupportedException(string.Format(CultureInfo.InvariantCulture, $"Can not get a factory for provider with invariant-name \"{name}\"."));
