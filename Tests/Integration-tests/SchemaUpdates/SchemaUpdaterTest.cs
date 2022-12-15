@@ -31,7 +31,7 @@ namespace IntegrationTests.SchemaUpdates
 
 		#region Properties
 
-		protected internal virtual string ApplicationDataDirectoryPath => this._applicationDataDirectoryPath ?? (this._applicationDataDirectoryPath = Path.Combine(Global.ProjectDirectoryPath, ServiceLocator.Current.GetInstance<EnvironmentOptions>().BasePath));
+		protected internal virtual string ApplicationDataDirectoryPath => this._applicationDataDirectoryPath ??= Path.Combine(Global.ProjectDirectoryPath, ServiceLocator.Current.GetInstance<EnvironmentOptions>().BasePath);
 
 		protected internal virtual ConnectionStringOptions ConnectionSetting
 		{
@@ -51,8 +51,8 @@ namespace IntegrationTests.SchemaUpdates
 		}
 
 		protected internal virtual DataAccessOptions DataAccessOptions { get; } = ServiceLocator.Current.GetInstance<DataAccessOptions>();
-		protected internal virtual string ReplacementFileCopyPath => this._replacementFileCopyPath ?? (this._replacementFileCopyPath = Path.Combine(this.ApplicationDataDirectoryPath, string.Format(CultureInfo.InvariantCulture, this.ReplacementFilePathFormat, ".Copy")));
-		protected internal virtual string ReplacementFilePath => this._replacementFilePath ?? (this._replacementFilePath = Path.Combine(this.ApplicationDataDirectoryPath, string.Format(CultureInfo.InvariantCulture, this.ReplacementFilePathFormat, string.Empty)));
+		protected internal virtual string ReplacementFileCopyPath => this._replacementFileCopyPath ??= Path.Combine(this.ApplicationDataDirectoryPath, string.Format(CultureInfo.InvariantCulture, this.ReplacementFilePathFormat, ".Copy"));
+		protected internal virtual string ReplacementFilePath => this._replacementFilePath ??= Path.Combine(this.ApplicationDataDirectoryPath, string.Format(CultureInfo.InvariantCulture, this.ReplacementFilePathFormat, string.Empty));
 		protected internal virtual string ReplacementFilePathFormat => _replacementFilePathFormat;
 
 		#endregion
