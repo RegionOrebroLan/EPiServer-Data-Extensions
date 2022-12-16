@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<languages>
+	<language id="en" name="English">
+		<contenttypes>
+			<startpage>
+				<name>Start page</name>
+				<description>The home page of the website.</description>
+			</startpage>
+		</contenttypes>
+	</language>
+</languages>

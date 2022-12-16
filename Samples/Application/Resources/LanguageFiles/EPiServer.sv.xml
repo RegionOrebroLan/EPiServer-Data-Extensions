@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<languages>
+	<language id="sv" name="svenska">
+		<contenttypes>
+			<startpage>
+				<name>Startsida</name>
+				<description>Startsidan för webbplatsen.</description>
+			</startpage>
+		</contenttypes>
+	</language>
+</languages>
