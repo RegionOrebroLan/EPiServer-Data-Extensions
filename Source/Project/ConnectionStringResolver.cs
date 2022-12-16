@@ -50,7 +50,7 @@ namespace RegionOrebroLan.EPiServer.Data
 
 			var resolvedConnectionString = sqlConnectionStringBuilder.ConnectionString;
 
-			this.Logger.Information($"Resolved connection-string {options.ConnectionString.ToStringRepresentation()} to {resolvedConnectionString.ToStringRepresentation()}.");
+			this.Logger.Information($"Resolved connection-string {options.Name.ToStringRepresentation()}.");
 
 			options.ConnectionString = resolvedConnectionString;
 
