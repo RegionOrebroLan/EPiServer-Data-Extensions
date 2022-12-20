@@ -13,8 +13,9 @@ namespace Application.Business.Data.SqlClient
 	{
 		#region Constructors
 
-		public SqlServerLocalDatabaseCreator(ILoggerFactory loggerFactory)
+		public SqlServerLocalDatabaseCreator(IConnectionStringResolver connectionStringResolver, ILoggerFactory loggerFactory)
 		{
+			this.ConnectionStringResolver = connectionStringResolver ?? throw new ArgumentNullException(nameof(connectionStringResolver));
 			this.Logger = (loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory))).Create(this.GetType().FullName);
 		}
 
@@ -22,6 +23,7 @@ namespace Application.Business.Data.SqlClient
 
 		#region Properties
 
+		protected internal virtual IConnectionStringResolver ConnectionStringResolver { get; }
 		protected internal virtual ILogger Logger { get; }
 
 		#endregion
@@ -49,10 +51,20 @@ namespace Application.Business.Data.SqlClient
 				return false;
 			}
 
+			// We make a copy. If the connection-string is resolved we only change the copy.
+			options = new ConnectionStringOptions
+			{
+				ConnectionString = string.Copy(options.ConnectionString),
+				Name = string.Copy(options.Name),
+				ProviderName = string.Copy(options.ProviderName)
+			};
+
 			// ReSharper disable ConvertToUsingDeclaration
 			using(var context = new DbContext(options.ConnectionString))
 			{
 				this.Logger.Information($"Ensuring database for connection-string {options.Name.ToStringRepresentation()} is created.");
+
+				this.ConnectionStringResolver.Resolve(options);
 
 				var created = context.Database.CreateIfNotExists();
 
