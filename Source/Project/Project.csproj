@@ -14,7 +14,7 @@
 		<RootNamespace>$(AssemblyName)</RootNamespace>
 		<SignAssembly>true</SignAssembly>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<VersionPrefix>0.2.0</VersionPrefix>
+		<VersionPrefix>0.3.0</VersionPrefix>
 		<VersionSuffix>alpha</VersionSuffix>
 	</PropertyGroup>
 	<ItemGroup>
