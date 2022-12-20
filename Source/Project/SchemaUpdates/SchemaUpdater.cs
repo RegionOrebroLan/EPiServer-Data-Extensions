@@ -13,6 +13,7 @@ using EPiServer.Data.SchemaUpdates.Internal;
 using EPiServer.Framework;
 using RegionOrebroLan.EPiServer.Data.Common;
 using RegionOrebroLan.EPiServer.Data.Hosting;
+using RegionOrebroLan.EPiServer.Data.IO.Extensions;
 
 namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 {
@@ -136,9 +137,7 @@ namespace RegionOrebroLan.EPiServer.Data.SchemaUpdates
 				return Path.GetFullPath(this.Environment.AppDataPath, this.HostEnvironment.ContentRootPath);
 			*/
 
-			var applicationDataPath = this.Environment.BasePath;
-
-			return Path.IsPathRooted(applicationDataPath) ? applicationDataPath : Path.Combine(this.HostEnvironment.ContentRootPath, applicationDataPath);
+			return PathExtension.GetFullPath(this.Environment.BasePath, this.HostEnvironment.ContentRootPath);
 		}
 
 		protected internal virtual IDictionary<string, string> GetReplacementEntries(string resourceName)
