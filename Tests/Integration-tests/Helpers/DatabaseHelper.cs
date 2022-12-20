@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using RegionOrebroLan.EPiServer.Data.Hosting;
 using RegionOrebroLan.EPiServer.Data.SqlClient.Extensions;
 
@@ -8,30 +9,44 @@ namespace IntegrationTests.Helpers
 	{
 		#region Fields
 
-		private static readonly IHostEnvironment _hostEnvironment = new TestHostEnvironment();
+		private static readonly IHostEnvironment _hostEnvironment = new HostEnvironment
+		{
+			ContentRootPath = Global.ProjectDirectoryPath
+		};
 
 		#endregion
 
 		#region Methods
 
+		private static async Task<DbContext> CreateContextAsync(string connectionString)
+		{
+			connectionString = SqlConnectionStringBuilderExtension.ResolveConnectionString(connectionString, _hostEnvironment);
+
+			var contextOptionsBuilder = new DbContextOptionsBuilder<DbContext>();
+
+			contextOptionsBuilder.UseSqlServer(connectionString);
+
+			return await Task.FromResult(new DbContext(contextOptionsBuilder.Options));
+		}
+
 		public static async Task CreateDatabaseAsync(string connectionString)
 		{
-			using(var testContext = new TestDbContext())
+			// ReSharper disable All
+			using(var context = await CreateContextAsync(connectionString))
 			{
-				testContext.ConnectionString = SqlConnectionStringBuilderExtension.ResolveConnectionString(connectionString, _hostEnvironment);
-
-				await testContext.Database.EnsureCreatedAsync();
+				await context.Database.EnsureCreatedAsync();
 			}
+			// ReSharper restore All
 		}
 
 		public static async Task DeleteDatabaseAsync(string connectionString)
 		{
-			using(var testContext = new TestDbContext())
+			// ReSharper disable All
+			using(var context = await CreateContextAsync(connectionString))
 			{
-				testContext.ConnectionString = SqlConnectionStringBuilderExtension.ResolveConnectionString(connectionString, _hostEnvironment);
-
-				await testContext.Database.EnsureDeletedAsync();
+				await context.Database.EnsureDeletedAsync();
 			}
+			// ReSharper restore All
 		}
 
 		#endregion
