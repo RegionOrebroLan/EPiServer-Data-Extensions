@@ -59,12 +59,12 @@ namespace Application.Business.Data.SqlClient
 				ProviderName = string.Copy(options.ProviderName)
 			};
 
+			this.ConnectionStringResolver.Resolve(options);
+
 			// ReSharper disable ConvertToUsingDeclaration
 			using(var context = new DbContext(options.ConnectionString))
 			{
 				this.Logger.Information($"Ensuring database for connection-string {options.Name.ToStringRepresentation()} is created.");
-
-				this.ConnectionStringResolver.Resolve(options);
 
 				var created = context.Database.CreateIfNotExists();
 
